@@ -618,6 +618,7 @@ class KubeCluster(SpecCluster):
                     "port": self.port,
                     "dashboard_address": self._dashboard_address,
                     "security": self.security,
+                    "jupyter": True,
                 },
             }
         elif self._deploy_mode == "remote":
