@@ -697,13 +697,19 @@ class KubeCluster(Cluster):
 
     def close(self, timeout=3600):
         """Delete the dask cluster"""
+        logger.critical("Closing KubeCluster")
         return self.sync(self._close, timeout=timeout)
 
     async def _close(self, timeout=3600):
+        logger.critical("Async Closing KubeCluster")
         await super()._close()
+        logger.critical("Finished super()._close() KubeCluster")
         if self.shutdown_on_close:
+            logger.critical("shutdown_on_close is True")
             try:
+                logger.critical("getting")
                 cluster = await DaskCluster.get(self.name, namespace=self.namespace)
+                logger.critical("deleting")
                 await cluster.delete()
             except kr8s.NotFoundError:
                 logger.warning(
@@ -1021,9 +1027,13 @@ async def wait_for_service(service_name, namespace):
 
 @atexit.register
 def reap_clusters():
+    logger.critical("Reaping clusters")
     async def _reap_clusters():
+        logger.critical("async Reaping clusters")
         for cluster in list(KubeCluster._instances):
+            logger.critical(f"Reaping {cluster.name}")
             if cluster.shutdown_on_close and cluster.status != Status.closed:
+                logger.critical(f"Closing {cluster.name}")
                 with suppress(TimeoutError):
                     if cluster.asynchronous:
                         await cluster.close(timeout=10)
